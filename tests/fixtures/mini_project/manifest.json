@@ -1,0 +1,16 @@
+{
+  "project": "mini_project",
+  "title": "Mini Project — Test Fixture",
+  "source_url": "https://example.test/mini",
+  "version": "v1",
+  "palette": {
+    "primary": "#222222",
+    "accent": "#888888",
+    "text_dark": "#111111"
+  },
+  "slides": [
+    {"index": 0, "role": "cover",   "image": "images/01_cover.png",   "title": "Mini Project"},
+    {"index": 1, "role": "content", "image": "images/02_content.png", "title": "1. Une diapo de contenu"},
+    {"index": 2, "role": "closing", "image": "images/03_closing.png", "title": "2. Conclusion"}
+  ]
+}

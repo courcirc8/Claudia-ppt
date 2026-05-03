@@ -1,0 +1,26 @@
+{
+  "project": "mini_project",
+  "title": "Mini Project",
+  "subtitle": "Test fixture — 3 slides",
+  "source_url": "https://example.test/mini",
+  "slides": [
+    {
+      "idx": 0,
+      "role": "cover",
+      "title": "Mini Project",
+      "body": "Test fixture\nServeur picker — suite de régression"
+    },
+    {
+      "idx": 1,
+      "role": "content",
+      "title": "1. Une diapo de contenu",
+      "body": "• Point un\n• Point deux\n• Point trois"
+    },
+    {
+      "idx": 2,
+      "role": "closing",
+      "title": "2. Conclusion",
+      "body": "Fin du fixture."
+    }
+  ]
+}

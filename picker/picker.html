@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atelier — Droit des familles</title>
+<title>Atelier Claudia-ppt — Composer une présentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Bricolage+Grotesque:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1476,9 +1476,9 @@ input { font: inherit; }
       <span class="img-badge" id="cover-badge"></span>
       <div class="layout">
         <div class="text-side">
-          <div class="eyebrow-mock" id="cover-eyebrow">Newsletter · Avril 2026</div>
-          <div class="title-mock" id="cover-title">Droit des familles</div>
-          <div class="sub-mock" id="cover-sub">Synthèse en 10 slides<br>droitdesfamilles.ch</div>
+          <div class="eyebrow-mock" id="cover-eyebrow"></div>
+          <div class="title-mock" id="cover-title"></div>
+          <div class="sub-mock" id="cover-sub"></div>
         </div>
         <div class="img-side" id="cover-img"></div>
       </div>
@@ -1487,17 +1487,10 @@ input { font: inherit; }
     <!-- Slide 2 — Content -->
     <div class="slide content" id="slide-content">
       <span class="img-badge" id="content-badge"></span>
-      <div class="c-title" id="content-title">1. La newsletter en bref</div>
+      <div class="c-title" id="content-title"></div>
       <div class="c-row">
         <div class="c-image" id="content-img"></div>
-        <div class="c-body" id="content-body">
-          <div class="bullet">Publication mensuelle de droit suisse</div>
-          <div class="bullet">Édition d'avril 2026</div>
-          <div class="bullet">Direction éditoriale partagée</div>
-          <div class="bullet">Soutien institutionnel HLV</div>
-          <div class="bullet">Focus divorce, entretien, fiscalité</div>
-          <div class="bullet">Mesures protectrices & arrêts du TF</div>
-        </div>
+        <div class="c-body" id="content-body"></div>
       </div>
       <span class="label" id="content-label">Slide 02 · Content · Normal</span>
     </div>
@@ -1523,7 +1516,8 @@ const STYLES = [
     id: "elegant_editorial",
     name: "Élégant éditorial",
     title_en: "Editorial",
-    sample: "samples/01_pink_violet.png",
+    sample: "samples/styles/elegant_editorial_cover.png",
+    sample_content: "samples/styles/elegant_editorial_content.png",
     lede: "Lignes douces, composition centrée, motifs floraux discrets. Pour un sujet humain, sensible.",
     traits: {
       Mood: "Raffiné · féminin · poétique",
@@ -1537,7 +1531,8 @@ const STYLES = [
     id: "corporate_classic",
     name: "Corporate classique",
     title_en: "Corporate",
-    sample: "samples/02_navy_gold.png",
+    sample: "samples/styles/corporate_classic_cover.png",
+    sample_content: "samples/styles/corporate_classic_content.png",
     lede: "Symétrie, contraste fort, accents dorés. Pour un sujet institutionnel, sérieux, intemporel.",
     traits: {
       Mood: "Institutionnel · sérieux · intemporel",
@@ -1551,7 +1546,8 @@ const STYLES = [
     id: "earth_warm",
     name: "Terre chaude",
     title_en: "Terracotta",
-    sample: "samples/03_earth_terracotta.png",
+    sample: "samples/styles/earth_warm_cover.png",
+    sample_content: "samples/styles/earth_warm_content.png",
     lede: "Matières chaudes, terre cuite, textures terreuses. Pour un sujet enraciné, humain, ancré.",
     traits: {
       Mood: "Chaleureux · enraciné · humain",
@@ -1565,7 +1561,8 @@ const STYLES = [
     id: "modern_fresh",
     name: "Moderne contemporain",
     title_en: "Modern",
-    sample: "samples/04_teal_coral.png",
+    sample: "samples/styles/modern_fresh_cover.png",
+    sample_content: "samples/styles/modern_fresh_content.png",
     lede: "Aplats francs, géométrie, mouvement. Pour un sujet d'innovation, jeune, dynamique.",
     traits: {
       Mood: "Frais · jeune · dynamique",
@@ -1579,7 +1576,8 @@ const STYLES = [
     id: "graphic_strict",
     name: "Graphique strict",
     title_en: "Strict",
-    sample: "samples/05_mono_crimson.png",
+    sample: "samples/styles/graphic_strict_cover.png",
+    sample_content: "samples/styles/graphic_strict_content.png",
     lede: "Monochrome + un accent. Brutalisme tempéré, ligne pure. Pour un sujet exigeant, intellectuel.",
     traits: {
       Mood: "Strict · intellectuel · graphique",
@@ -1593,7 +1591,8 @@ const STYLES = [
     id: "botanical_soft",
     name: "Botanique organique",
     title_en: "Botanical",
-    sample: "samples/06_sage_rose.png",
+    sample: "samples/styles/botanical_soft_cover.png",
+    sample_content: "samples/styles/botanical_soft_content.png",
     lede: "Feuillages stylisés, naturel doux, palette végétale. Pour un sujet vivant, organique.",
     traits: {
       Mood: "Doux · vivant · organique",
@@ -1653,16 +1652,16 @@ const PALETTES = [
 const FONT_PAIRS = [
   { id: "fraunces_inter", display: "Fraunces", body: "Inter",
     family_display: "'Fraunces', serif", family_body: "'Inter', sans-serif",
-    title: "Droit des familles", body_text: "Newsletter mensuelle — avril 2026" },
+    title: "Aa Bb Cc", body_text: "Aperçu typographique — corps de texte." },
   { id: "playfair_inter", display: "Playfair Display", body: "Inter",
     family_display: "'Playfair Display', serif", family_body: "'Inter', sans-serif",
-    title: "Droit des familles", body_text: "Newsletter mensuelle — avril 2026" },
+    title: "Aa Bb Cc", body_text: "Aperçu typographique — corps de texte." },
   { id: "cormorant_inter", display: "Cormorant Garamond", body: "Inter",
     family_display: "'Cormorant Garamond', serif", family_body: "'Inter', sans-serif",
-    title: "Droit des familles", body_text: "Newsletter mensuelle — avril 2026" },
+    title: "Aa Bb Cc", body_text: "Aperçu typographique — corps de texte." },
   { id: "bricolage_inter", display: "Bricolage Grotesque", body: "Inter",
     family_display: "'Bricolage Grotesque', sans-serif", family_body: "'Inter', sans-serif",
-    title: "Droit des familles", body_text: "Newsletter mensuelle — avril 2026" }
+    title: "Aa Bb Cc", body_text: "Aperçu typographique — corps de texte." }
 ];
 
 const DENSITIES = [
@@ -1682,33 +1681,57 @@ const IMG_STYLES = [
   { id: "abstract", label: "Abstraite", meta: "Formes pures, non-figuratif", sample: "samples/styles/abstract.png", model: "gpt-image-2", cost_per_img: 0.053 }
 ];
 
-// Default content for the 10 slides — matches the v7 PowerPoint
-const DEFAULT_SLIDES = [
-  { idx: 0, role: "cover", title: "Droit des familles",
-    body: "Newsletter — avril 2026\nSynthèse en 10 slides\ndroitdesfamilles.ch" },
-  { idx: 1, role: "content", title: "1. La newsletter en bref",
-    body: "• Publication mensuelle de droit suisse de la famille\n• Édition d'avril 2026\n• Direction : Bohnet, Burgat, Hauser, Hotz, Munastra\n• Soutien institutionnel : HLV\n• Focus : divorce, entretien, liquidation, mesures protectrices, droit fiscal" },
-  { idx: 2, role: "content", title: "2. Ouvrage à l'honneur",
-    body: "« Travail du sexe, vulnérabilités et droit »\n\n• Analyse interdisciplinaire du traitement juridique de la prostitution à Genève\n• Protection des droits et impact du droit sur les vulnérabilités\n• Code promo : NL0426\n• Valable jusqu'au 31 mai 2026" },
-  { idx: 3, role: "content", title: "3. Arrêt phare — TF 5A_54/2024",
-    body: "Procédure de divorce — trois axes majeurs :\n\n• Contributions d'entretien provisoires\n• Liquidation du régime matrimonial et qualification des biens\n• Partage des biens en copropriété et de l'immobilier\n\nDécision charnière pour la pratique romande." },
-  { idx: 4, role: "content", title: "4. Entretien & mesures provisionnelles",
-    body: "Les contributions d'entretien fixées en mesures provisionnelles deviennent caduques dès l'entrée en force du jugement de divorce.\n\nException : si l'appel porte précisément sur la réglementation de l'entretien, les mesures provisionnelles continuent de produire leurs effets." },
-  { idx: 5, role: "content", title: "5. Liquidation & partage (art. 650-651 CC)",
-    body: "Trois modes de partage :\n• Partage en nature\n• Vente aux enchères\n• Attribution à la partie ayant un intérêt prépondérant\n\nConditions cumulatives pour l'attribution :\n• Démontrer l'intérêt prépondérant\n• Justifier la capacité d'indemnisation" },
-  { idx: 6, role: "content", title: "6. Biens propres avant mariage (art. 198 CC)",
-    body: "Les biens acquis avant le mariage avec une garantie juridique constituent des biens propres (art. 198 ch. 2 CC).\n\nLes simples expectatives, sans certitude juridique, ne deviennent pas automatiquement des biens propres lors du mariage.\n\n→ Distinction essentielle pour la liquidation du régime matrimonial." },
-  { idx: 7, role: "content", title: "7. Copropriété immobilière & charges (art. 649 CC)",
-    body: "Les charges et impôts immobiliers d'un bien en copropriété s'appliquent à l'ensemble du bien, au prorata des quotes-parts.\n\nUn copropriétaire ne peut pas imposer une répartition supérieure des coûts en raison d'un usage plus intensif.\n\n→ Principe : strict prorata des parts." },
-  { idx: 8, role: "content", title: "8. Frais de garde & fiscalité — TF 9C_156/2025",
-    body: "Impôt fédéral direct — déduction des frais de garde :\n\n• Qualifiés de déductions générales, et non de frais professionnels\n• Plafonds annuels appliqués\n• Calcul global sur l'ensemble des enfants\n\n→ Optimisation à anticiper en cas de garde alternée ou de famille recomposée." },
-  { idx: 9, role: "closing", title: "9. Regroupement familial — TF 2C_510/2025",
-    body: "Le regroupement familial différé exige des « raisons familiales majeures » au-delà du délai standard de 5 ans.\n\nL'intérêt supérieur de l'enfant doit être pondéré, mais ne prime pas automatiquement sur les impératifs de gestion migratoire.\n\n→ Sources : droitmatrimonial.ch · hub.droitne.ch" }
-];
+// Generic default placeholders for the 10 slides. NEVER project-specific.
+// When a project has a slides_content.json on disk, loadProjectSlides()
+// overrides these. The cover title shows the project slug as a hint.
+const DEFAULT_SLIDES = (function () {
+  const cover = (PROJECT_NAME && PROJECT_NAME !== "untitled")
+    ? PROJECT_NAME.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+    : "Titre de la présentation";
+  return [
+    { idx: 0, role: "cover",   title: cover,
+      body: "Sous-titre · Date · Auteur\n(Édite ce contenu dans l'onglet « Contenu slides »)" },
+    { idx: 1, role: "content", title: "Slide 1 — Titre",
+      body: "• Premier point clé\n• Deuxième point\n• Troisième point" },
+    { idx: 2, role: "content", title: "Slide 2 — Titre",
+      body: "Texte libre, paragraphe ou liste à puces." },
+    { idx: 3, role: "content", title: "Slide 3 — Titre",
+      body: "Contenu de la slide 3." },
+    { idx: 4, role: "content", title: "Slide 4 — Titre",
+      body: "Contenu de la slide 4." },
+    { idx: 5, role: "content", title: "Slide 5 — Titre",
+      body: "Contenu de la slide 5." },
+    { idx: 6, role: "content", title: "Slide 6 — Titre",
+      body: "Contenu de la slide 6." },
+    { idx: 7, role: "content", title: "Slide 7 — Titre",
+      body: "Contenu de la slide 7." },
+    { idx: 8, role: "content", title: "Slide 8 — Titre",
+      body: "Contenu de la slide 8." },
+    { idx: 9, role: "closing", title: "Conclusion",
+      body: "Synthèse · Remerciements · Coordonnées" }
+  ];
+})();
+
+// ─── PROJECT CONTEXT ──────────────────────────────────
+// Read ?project=<slug> from the URL. Default to "untitled" when missing
+// so the picker still loads (e.g. when opened directly without a project).
+const PROJECT_NAME = (function () {
+  try {
+    const p = new URLSearchParams(window.location.search).get("project");
+    if (p && /^[A-Za-z0-9_-]+$/.test(p)) return p;
+  } catch (_) { /* fall through */ }
+  return "untitled";
+})();
+
+// True when picker is served over HTTP by picker/server.py — enables disk I/O.
+// Under file:// we degrade gracefully: localStorage state only, no project load.
+const SERVER_MODE = window.location.protocol === "http:" || window.location.protocol === "https:";
 
 // ─── STATE ─────────────────────────────────────────────
-const STATE_KEY = "df_atelier_state";
-const PRESETS_KEY = "df_atelier_presets";
+// State and presets are scoped per project so switching projects doesn't
+// leak previous selections into the next one.
+const STATE_KEY = `claudia_ppt_state:${PROJECT_NAME}`;
+const PRESETS_KEY = `claudia_ppt_presets:${PROJECT_NAME}`;
 const initialState = {
   style: "elegant_editorial",
   palette: "pink_violet",
@@ -2112,7 +2135,6 @@ function buildBrief(code) {
 - **Date**: ${ts}
 - **Projet**: ${PROJECT_NAME}
 - **Action**: build_pptx
-- **Source URL**: https://droitdesfamilles.ch/campagne/2546
 
 ## Composition
 
@@ -2261,6 +2283,19 @@ function renderBottomBar() {
   cTitle.style.fontFamily = font.family_display;
   cSub.style.fontFamily = font.family_body;
   cEye.style.fontFamily = "var(--fs-mono)";
+
+  // ─── Inject actual project text from state.slides into preview mockup ───
+  const slidesData = (state.slides && state.slides.length)
+    ? state.slides
+    : DEFAULT_SLIDES.map(d => ({ title: d.title, body: d.body }));
+  const cover0 = slidesData[0] || { title: "", body: "" };
+  cTitle.textContent = cover0.title || "Titre de la présentation";
+  // First line of body → eyebrow, remainder → sub.
+  const coverLines = (cover0.body || "").split("\n").filter(l => l.trim());
+  cEye.textContent = coverLines[0] || "";
+  cSub.innerHTML = coverLines.slice(1).map(l =>
+    l.replace(/[<>&]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;" }[c]))
+  ).join("<br>");
   document.getElementById("cover-img").style.backgroundImage = `url(${style.sample})`;
   // Image style class on cover
   cover.classList.remove("img-illustrated", "img-photo", "img-abstract");
@@ -2277,7 +2312,25 @@ function renderBottomBar() {
   const ct = document.getElementById("content-title");
   ct.style.fontFamily = font.family_display;
   ct.style.color = palette.colors.primary;
-  document.getElementById("content-img").style.backgroundImage = `url(${style.sample})`;
+  // Use slide 2 (index 1) for the content preview. Use the style's content sample
+  // when available, otherwise fall back to the cover sample.
+  const contentImgUrl = style.sample_content || style.sample;
+  document.getElementById("content-img").style.backgroundImage = `url(${contentImgUrl})`;
+
+  // ─── Inject actual content slide text into preview ───
+  const content1 = slidesData[1] || { title: "", body: "" };
+  ct.textContent = content1.title || "Titre de la slide";
+  // Build bullets from body lines (non-empty).
+  const bulletLines = (content1.body || "").split("\n").filter(l => l.trim());
+  const bodyEl = document.getElementById("content-body");
+  bodyEl.innerHTML = "";
+  bulletLines.forEach(line => {
+    const div = document.createElement("div");
+    div.className = "bullet";
+    // Strip leading bullet glyphs/dashes for clean rendering
+    div.textContent = line.replace(/^[\s•·\-–—\*]+/, "");
+    bodyEl.appendChild(div);
+  });
   content.querySelectorAll(".bullet").forEach(b => {
     b.style.fontFamily = font.family_body;
     b.style.color = palette.colors.text;
@@ -2612,7 +2665,21 @@ document.getElementById("export-btn").addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = "selected_theme.json"; a.click();
   URL.revokeObjectURL(url);
-  toast("Exporté · selected_theme.json");
+
+  // Also POST to picker/server.py so the file lands directly under
+  // presentations/<slug>/ without manual move (server mode only).
+  if (SERVER_MODE) {
+    fetch(`/api/project/${encodeURIComponent(PROJECT_NAME)}/selected_theme`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(out),
+    }).then(r => {
+      if (r.ok) toast("Exporté · selected_theme.json (sauvé sur disque)");
+      else toast("Exporté · téléchargé seulement (POST disque échoué)");
+    }).catch(() => toast("Exporté · téléchargé seulement"));
+  } else {
+    toast("Exporté · selected_theme.json");
+  }
 });
 
 document.getElementById("reset-btn").addEventListener("click", () => {
@@ -2674,6 +2741,129 @@ document.querySelectorAll(".tab").forEach(t => {
     else stopPolling();
   });
 });
+
+// ─── PROJECT LOADER (server mode) ─────────────────────
+// Loads existing project files from picker/server.py and overrides
+// localStorage state with disk values when present. Idempotent: safe to
+// call multiple times. Under file:// (no server), returns silently.
+
+async function _projGet(path) {
+  if (!SERVER_MODE) return null;
+  try {
+    const r = await fetch(path, { cache: "no-store" });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (_) { return null; }
+}
+
+// Compare two hex colors loosely (case-insensitive, with/without #).
+function _hexEq(a, b) {
+  if (!a || !b) return false;
+  const norm = (h) => String(h).replace("#", "").toLowerCase();
+  return norm(a) === norm(b);
+}
+
+// Map a manifest palette {primary, accent|accent_pink, gold, text|text_dark, bg?}
+// back to one of the named themes from themes.json. Returns the theme id, or
+// null if no close match (caller should switch to a custom palette state).
+function matchManifestPaletteToTheme(palette, themes) {
+  if (!palette || !Array.isArray(themes)) return null;
+  const accent = palette.accent || palette.accent_pink;
+  const text = palette.text || palette.text_dark;
+  for (const t of themes) {
+    const p = t.palette || {};
+    if (_hexEq(p.primary, palette.primary) &&
+        _hexEq(p.accent,  accent) &&
+        _hexEq(p.gold,    palette.gold) &&
+        (text == null || _hexEq(p.text, text))) {
+      return t.id;
+    }
+  }
+  return null;
+}
+
+async function loadProjectSlides() {
+  if (!SERVER_MODE) {
+    // file:// mode — picker is opened directly from disk. No project I/O.
+    return;
+  }
+  const base = `/api/project/${encodeURIComponent(PROJECT_NAME)}`;
+  const exists = await _projGet(`${base}/exists`);
+  if (!exists || !exists.exists) {
+    // New project — keep DEFAULT_SLIDES as the editing seed but show the
+    // project slug in the title. Nothing to merge from disk.
+    console.info(`[picker] project '${PROJECT_NAME}' has no scaffold yet`);
+    return;
+  }
+
+  // Pull files in parallel.
+  const [slides, manifest, theme, themesCfg] = await Promise.all([
+    _projGet(`${base}/file/slides_content.json`),
+    _projGet(`${base}/file/manifest.json`),
+    _projGet(`${base}/file/selected_theme.json`),
+    _projGet(`/themes.json`),
+  ]);
+
+  let dirty = false;
+
+  // 1) Slides — slides_content.json wins over DEFAULT_SLIDES.
+  if (slides && Array.isArray(slides.slides) && slides.slides.length) {
+    state.slides = slides.slides.map((s, i) => ({
+      title: String(s.title ?? DEFAULT_SLIDES[i]?.title ?? ""),
+      body:  String(s.body  ?? DEFAULT_SLIDES[i]?.body  ?? "")
+    }));
+    // Pad with defaults if fewer than DEFAULT_SLIDES.length entries.
+    while (state.slides.length < DEFAULT_SLIDES.length) {
+      const i = state.slides.length;
+      state.slides.push({ title: DEFAULT_SLIDES[i].title, body: DEFAULT_SLIDES[i].body });
+    }
+    dirty = true;
+  }
+
+  // 2) Palette inference from manifest, only if user hasn't already exported a
+  //    selected_theme.json (which represents an explicit choice).
+  if (!theme && manifest && manifest.palette && themesCfg && Array.isArray(themesCfg.themes)) {
+    const matched = matchManifestPaletteToTheme(manifest.palette, themesCfg.themes);
+    if (matched) {
+      state.palette = matched;
+      dirty = true;
+      console.info(`[picker] palette matched from manifest → ${matched}`);
+    } else {
+      // Hydrate custom palette so user sees the actual project colors.
+      const p = manifest.palette;
+      state.custom_palette = {
+        primary: p.primary || state.custom_palette.primary,
+        accent:  p.accent || p.accent_pink || state.custom_palette.accent,
+        gold:    p.gold || state.custom_palette.gold,
+        text:    p.text || p.text_dark || state.custom_palette.text,
+        bg:      p.bg || state.custom_palette.bg,
+      };
+      state.palette = "custom";
+      dirty = true;
+      console.info("[picker] palette did not match any theme — loaded as custom");
+    }
+  }
+
+  // 3) selected_theme.json — explicit user export takes precedence over everything.
+  if (theme && typeof theme === "object") {
+    if (theme.style) state.style = theme.style;
+    if (theme.palette) state.palette = theme.palette;
+    if (theme.font) state.font = theme.font;
+    if (theme.density) state.density = theme.density;
+    if (theme.ratio) state.ratio = theme.ratio;
+    if (theme.image_style) state.image_style = theme.image_style;
+    if (theme.custom_palette) {
+      state.custom_palette = { ...state.custom_palette, ...theme.custom_palette };
+    }
+    dirty = true;
+    console.info("[picker] selected_theme.json loaded");
+  }
+
+  if (dirty) {
+    saveState();
+    renderAll();
+  }
+}
 
 // ─── BOOT ─────────────────────────────────────────────
 document.getElementById("meta-date").textContent = fmtDate();

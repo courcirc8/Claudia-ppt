@@ -1,0 +1,30 @@
+# Secrets
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+
+# Venv (au cas où)
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Cache local des images générées
+.cache/
+*.png.tmp
+
+# Anciens fichiers de test du v1
+image_error*.txt
+image_test*.txt
+test_generation.py

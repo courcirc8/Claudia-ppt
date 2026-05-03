@@ -1,0 +1,49 @@
+Claudia-ppt
+============
+
+Copyright (c) 2026 Eric Vandel
+Licensed under the MIT License — see LICENSE.
+
+This product includes software developed by third parties.
+The components listed below are bundled in the `servers/` directory and remain
+under their original licenses.
+
+────────────────────────────────────────────────────────────────────
+1. Office-PowerPoint-MCP-Server
+────────────────────────────────────────────────────────────────────
+Location  : servers/powerpoint/
+Origin    : https://github.com/GongRzhe/Office-PowerPoint-MCP-Server
+Version   : 2.0.6 (vendored 2026-05-03)
+License   : MIT
+Copyright : Copyright (c) 2025 GongRzhe
+License text: see servers/powerpoint/LICENSE
+
+This MCP server provides PowerPoint manipulation capabilities (32 tools across
+11 modules) used by Claudia-ppt's `pptx_kit` library to generate the actual
+.pptx files. All credit for the underlying PowerPoint MCP architecture goes
+to GongRzhe.
+
+────────────────────────────────────────────────────────────────────
+2. Image generation MCP server
+────────────────────────────────────────────────────────────────────
+Location  : servers/image-gen/
+Origin    : https://github.com/courcirc8/image_gen (own repository)
+License   : MIT
+Copyright : Copyright (c) 2026 Eric Vandel
+
+────────────────────────────────────────────────────────────────────
+Runtime dependencies (pip / npm) — see requirements.txt and individual
+sub-projects for the canonical license list.
+────────────────────────────────────────────────────────────────────
+
+Notable Python deps used by pptx_kit and the bundled servers:
+  - python-pptx                     MIT
+  - Pillow                          HPND (BSD-style)
+  - pytest                          MIT
+  - mcp / fastmcp                   MIT
+  - replicate                       Apache-2.0
+
+Notable runtime tools used by the quality loop:
+  - LibreOffice (soffice)           MPL 2.0  (used at runtime only, not bundled)
+  - poppler (pdftoppm)              GPL-2.0  (used at runtime only, not bundled)
+  - Node.js (for JS validation in tests)  MIT-style

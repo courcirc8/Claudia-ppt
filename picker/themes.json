@@ -1,0 +1,95 @@
+{
+  "themes": [
+    {
+      "id": "pink_violet",
+      "name": "Pink Violet",
+      "tagline": "Élégant éditorial — féminin et raffiné",
+      "sample": "samples/01_pink_violet.png",
+      "palette": {
+        "primary": "#501464",
+        "accent": "#E8B4D2",
+        "gold": "#C9A96E",
+        "text": "#321E3C",
+        "bg": "#FCF8FD"
+      },
+      "fonts": {"title": "Georgia", "body": "Calibri"},
+      "gradient_cover": [[60, 20, 80], [200, 130, 180]],
+      "current": true
+    },
+    {
+      "id": "navy_gold",
+      "name": "Navy Gold",
+      "tagline": "Corporate classique — institutionnel",
+      "sample": "samples/02_navy_gold.png",
+      "palette": {
+        "primary": "#0E2A47",
+        "accent": "#C9A96E",
+        "gold": "#E8C97D",
+        "text": "#1A1A1A",
+        "bg": "#FBF8F1"
+      },
+      "fonts": {"title": "Georgia", "body": "Calibri"},
+      "gradient_cover": [[14, 42, 71], [70, 100, 140]]
+    },
+    {
+      "id": "earth_terracotta",
+      "name": "Earth Terracotta",
+      "tagline": "Chaleureux — naturel et humain",
+      "sample": "samples/03_earth_terracotta.png",
+      "palette": {
+        "primary": "#7A3925",
+        "accent": "#D89B7A",
+        "gold": "#C9A96E",
+        "text": "#3A2418",
+        "bg": "#FAF3EC"
+      },
+      "fonts": {"title": "Georgia", "body": "Calibri"},
+      "gradient_cover": [[122, 57, 37], [216, 155, 122]]
+    },
+    {
+      "id": "teal_coral",
+      "name": "Teal Coral",
+      "tagline": "Moderne — frais et contemporain",
+      "sample": "samples/04_teal_coral.png",
+      "palette": {
+        "primary": "#0F4C5C",
+        "accent": "#FB8B7C",
+        "gold": "#F7C77E",
+        "text": "#1A2530",
+        "bg": "#F5F8F8"
+      },
+      "fonts": {"title": "Inter", "body": "Inter"},
+      "gradient_cover": [[15, 76, 92], [80, 160, 175]]
+    },
+    {
+      "id": "mono_crimson",
+      "name": "Mono Crimson",
+      "tagline": "Strict — éditorial graphique",
+      "sample": "samples/05_mono_crimson.png",
+      "palette": {
+        "primary": "#1A1A1A",
+        "accent": "#C8102E",
+        "gold": "#888888",
+        "text": "#1A1A1A",
+        "bg": "#F4F4F4"
+      },
+      "fonts": {"title": "Helvetica", "body": "Helvetica"},
+      "gradient_cover": [[26, 26, 26], [80, 80, 80]]
+    },
+    {
+      "id": "sage_rose",
+      "name": "Sage Rose",
+      "tagline": "Botanique — doux et organique",
+      "sample": "samples/06_sage_rose.png",
+      "palette": {
+        "primary": "#5A6B4F",
+        "accent": "#D8A2A0",
+        "gold": "#C9A96E",
+        "text": "#2D352A",
+        "bg": "#F7F5EE"
+      },
+      "fonts": {"title": "Georgia", "body": "Calibri"},
+      "gradient_cover": [[90, 107, 79], [180, 200, 150]]
+    }
+  ]
+}

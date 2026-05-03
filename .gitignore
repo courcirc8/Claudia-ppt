@@ -1,0 +1,90 @@
+# ──────────────────────────────────────────────────────────────
+#  SECRETS — JAMAIS commit. Toute clef API doit rester locale.
+# ──────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+secrets/
+credentials*
+*token*.json
+*api_key*
+
+# ──────────────────────────────────────────────────────────────
+#  Python
+# ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.benchmarks/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+*.log
+build/
+dist/
+*.egg
+
+# ──────────────────────────────────────────────────────────────
+#  Virtual envs
+# ──────────────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.python-version
+
+# ──────────────────────────────────────────────────────────────
+#  IDE / OS
+# ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────────────────────────────────────
+#  Node (au cas où on ajoute un build front-end)
+# ──────────────────────────────────────────────────────────────
+node_modules/
+*.tsbuildinfo
+.npm/
+.yarn/
+
+# ──────────────────────────────────────────────────────────────
+#  Local-only files (configuration utilisateur)
+# ──────────────────────────────────────────────────────────────
+.local/
+*.local.json
+*.local.md
+
+# ──────────────────────────────────────────────────────────────
+#  User data / output : générés à l'usage, ne pas versionner
+# ──────────────────────────────────────────────────────────────
+presentations/
+~$*.pptx
+*.pptx.tmp
+*.pdf.tmp
+~/.cache/image-gen/
+
+# ──────────────────────────────────────────────────────────────
+#  Cache MCP servers
+# ──────────────────────────────────────────────────────────────
+servers/*/cache/
+servers/*/__pycache__/
+servers/*/.pytest_cache/
+servers/*/tests/__pycache__/
+servers/*/tools/__pycache__/
+servers/*/utils/__pycache__/
+
+# ──────────────────────────────────────────────────────────────
+#  Démo binaires lourds bundled (à inclure manuellement si besoin)
+# ──────────────────────────────────────────────────────────────
+# servers/powerpoint/public/demo.mp4   ← gardé pour le README
+# servers/powerpoint/public/demo.gif   ← gardé pour le README

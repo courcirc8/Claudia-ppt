@@ -88,3 +88,20 @@ servers/*/utils/__pycache__/
 # ──────────────────────────────────────────────────────────────
 # servers/powerpoint/public/demo.mp4   ← gardé pour le README
 # servers/powerpoint/public/demo.gif   ← gardé pour le README
+
+# ──────────────────────────────────────────────────────────────
+#  Picker — assets régénérés par le flow image-gen
+# ──────────────────────────────────────────────────────────────
+# Style previews (cover + content) sont produits par le pipeline
+# de génération d'images, pas committés.
+picker/samples/styles/*.png
+picker/samples/styles/*.jpg
+picker/samples/styles/*.webp
+# Theme palette previews — idem, regénérés
+picker/samples/themes/*.png
+picker/samples/themes/*.jpg
+
+# ──────────────────────────────────────────────────────────────
+#  Claude Code — données de session locales
+# ──────────────────────────────────────────────────────────────
+.claude/

@@ -84,9 +84,12 @@ class TestJsParse:
         )
         assert result.returncode == 0, f"JS parse failed: {result.stderr}"
 
-    def test_brackets_balanced(self, js):
-        for o, c in [("{", "}"), ("(", ")"), ("[", "]")]:
-            assert js.count(o) == js.count(c), f"Unbalanced {o}{c}"
+    # NOTE: a previous `test_brackets_balanced` did naive js.count("(") ==
+    # js.count(")") etc. That's fundamentally fragile because the JS contains
+    # parentheses inside string literals, regexps and comments (e.g. "5A_54/2024",
+    # "(édite ce contenu…)", emoticons, …). `test_node_parses_js` above already
+    # validates real syntax via Node's parser, which is the source of truth.
+    # Removed to eliminate a permanent false-positive failure.
 
     def test_no_console_log(self, js):
         # Production code shouldn't ship with debug console.log
@@ -175,8 +178,19 @@ class TestDefaultSlides:
 
     @pytest.fixture
     def default_slides_block(self, js):
-        m = re.search(r"const DEFAULT_SLIDES = \[(.*?)\];", js, re.DOTALL)
-        assert m, "DEFAULT_SLIDES not declared"
+        # DEFAULT_SLIDES is wrapped in an IIFE that injects the project name
+        # into the cover title:
+        #   const DEFAULT_SLIDES = (function () {
+        #     ...
+        #     return [ {idx: 0, ...}, ... ];
+        #   })();
+        # We extract the array literal returned at the end.
+        m = re.search(
+            r"const DEFAULT_SLIDES\s*=.*?return\s*\[(.*?)\];",
+            js,
+            re.DOTALL,
+        )
+        assert m, "DEFAULT_SLIDES not declared (IIFE form)"
         return m.group(1)
 
     def test_ten_slides(self, default_slides_block):
@@ -186,10 +200,13 @@ class TestDefaultSlides:
         assert sorted(int(i) for i in idxs) == list(range(10))
 
     def test_each_slide_has_title_and_body(self, default_slides_block):
-        title_count = len(re.findall(r"title:\s*\"", default_slides_block))
-        body_count = len(re.findall(r"body:\s*\"", default_slides_block))
-        assert title_count == 10
-        assert body_count == 10
+        # The cover slide's title may reference the `cover` variable from the
+        # IIFE closure (e.g. `title: cover`) instead of a string literal.
+        # Accept either: a string `"..."` or a bare identifier.
+        title_count = len(re.findall(r'title:\s*(?:"[^"]*"|[A-Za-z_]\w*)', default_slides_block))
+        body_count = len(re.findall(r'body:\s*(?:"[^"]*"|[A-Za-z_]\w*)', default_slides_block))
+        assert title_count == 10, f"expected 10 titles, got {title_count}"
+        assert body_count == 10, f"expected 10 bodies, got {body_count}"
 
     def test_first_is_cover(self, default_slides_block):
         # First entry should have role: "cover"
@@ -235,7 +252,15 @@ class TestStateExtensions:
             assert field in block, f"initialState missing {field}"
 
     def test_presets_storage_key_defined(self, js):
-        assert 'PRESETS_KEY = "df_atelier_presets"' in js or "PRESETS_KEY=" in js
+        # PRESETS_KEY moved from the legacy literal "df_atelier_presets" to a
+        # per-project template literal: `claudia_ppt_presets:${PROJECT_NAME}`.
+        # Accept either form so the test stays resilient to future renames as
+        # long as the key is project-scoped.
+        assert re.search(
+            r"const\s+PRESETS_KEY\s*=\s*[`'\"]"  # const PRESETS_KEY = `…
+            r"(claudia_ppt_presets|df_atelier_presets)",
+            js,
+        ), "PRESETS_KEY not declared (expected claudia_ppt_presets:* template)"
 
 
 # Run with: pytest tests/test_picker_html.py -v

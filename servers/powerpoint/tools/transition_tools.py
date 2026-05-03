@@ -45,29 +45,37 @@ def register_transition_tools(app, presentations, get_current_presentation_id, v
             slide = pres.slides[slide_index]
             
             if operation == "get":
-                # Get current transition info (limited python-pptx support)
+                # Read the transition XML directly from the slide element.
+                # python-pptx has no high-level API; this returns whatever transition
+                # node exists, or {} if none.
+                from pptx.oxml.ns import qn
+                trans = slide.element.find(qn('p:transition'))
+                if trans is None:
+                    return {
+                        "slide_index": slide_index,
+                        "transition": None,
+                        "message": "No transition set on this slide"
+                    }
                 return {
-                    "message": f"Transition info for slide {slide_index}",
                     "slide_index": slide_index,
-                    "note": "Transition reading has limited support in python-pptx"
+                    "transition_xml": trans.xml,
+                    "message": f"Transition found on slide {slide_index}"
                 }
-            
-            elif operation == "set":
+
+            elif operation in ("set", "remove"):
+                # Be honest: python-pptx exposes no API for transitions, and we have
+                # not implemented the XML manipulation. Don't return fake success.
                 return {
-                    "message": f"Transition setting requested for slide {slide_index}",
+                    "error": "not_implemented",
+                    "operation": operation,
                     "slide_index": slide_index,
-                    "transition_type": transition_type,
-                    "duration": duration,
-                    "note": "Transition setting has limited support in python-pptx - this is a placeholder for future enhancement"
+                    "details": (
+                        f"manage_slide_transitions(operation='{operation}') is not implemented. "
+                        "python-pptx has no transition API; setting/removing transitions "
+                        "requires direct OXML manipulation that this server does not yet do."
+                    ),
                 }
-            
-            elif operation == "remove":
-                return {
-                    "message": f"Transition removal requested for slide {slide_index}",
-                    "slide_index": slide_index,
-                    "note": "Transition removal has limited support in python-pptx - this is a placeholder for future enhancement"
-                }
-            
+
             else:
                 return {"error": f"Unsupported operation: {operation}. Use 'set', 'remove', or 'get'"}
                 

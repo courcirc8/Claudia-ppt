@@ -123,9 +123,9 @@ class VisualEffectsManager:
                     self._apply_text_glow(text_frame, effect_config, color_scheme)
                 elif effect_type == 'outline':
                     self._apply_text_outline(text_frame, effect_config, color_scheme)
-            except Exception:
-                # Graceful fallback if effect application fails
-                pass
+            except Exception as e:
+                import sys
+                print(f"[template_utils.apply_text_effects:{effect_type}] swallowed: {e}", file=sys.stderr)
     
     def _apply_text_shadow(self, text_frame, config: Dict, color_scheme: str) -> None:
         """Apply shadow effect to text (simplified implementation)."""
@@ -168,10 +168,10 @@ class VisualEffectsManager:
                     image_shape.line.color.rgb = RGBColor(*color)
                 elif 'color' in border_config:
                     image_shape.line.color.rgb = RGBColor(*border_config['color'])
-        
-        except Exception:
-            # Graceful fallback
-            pass
+
+        except Exception as e:
+            import sys
+            print(f"[template_utils.apply_image_effects:{effect_name}] swallowed: {e}", file=sys.stderr)
     
     def _get_color_from_scheme(self, color_scheme: str, color_role: str) -> Tuple[int, int, int]:
         """Get color from scheme (helper method)."""
@@ -702,8 +702,9 @@ def create_image_element(slide, element: Dict, image_path: str = None) -> Any:
             pass
         
         return image_shape
-    except Exception:
-        # Fallback to placeholder if image fails to load
+    except Exception as e:
+        import sys
+        print(f"[template_utils.create_image_element] image load failed, using placeholder: {e}", file=sys.stderr)
         return create_image_element(slide, element, None)
 
 

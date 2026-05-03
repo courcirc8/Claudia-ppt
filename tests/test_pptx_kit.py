@@ -209,19 +209,23 @@ class TestDiff:
         after = tmp_path / "after.pptx"
         shutil.copy2(PPTX, before)
         shutil.copy2(PPTX, after)
-        # Modify one font size in 'after'
+        # Modify one font size in 'after' — bump every sized run, save once, diff once.
         p = Presentation(str(after))
+        modified = False
         for slide in p.slides:
             for sh in slide.shapes:
-                if sh.has_text_frame:
-                    for para in sh.text_frame.paragraphs:
-                        for run in para.runs:
-                            if run.font.size:
-                                run.font.size = Pt(99)
-                                p.save(str(after))
-                                changes = diff_presentations(str(before), str(after))
-                                assert any(c["kind"] == "font_size_changed" for c in changes)
-                                return
+                if not sh.has_text_frame:
+                    continue
+                for para in sh.text_frame.paragraphs:
+                    for run in para.runs:
+                        if run.font.size:
+                            run.font.size = Pt(99)
+                            modified = True
+        assert modified, "fixture has no run with explicit font size — test cannot exercise diff"
+        p.save(str(after))
+        changes = diff_presentations(str(before), str(after))
+        assert any(c["kind"] == "font_size_changed" for c in changes), \
+            f"diff did not detect font_size_changed; got: {changes}"
 
 
 class TestSlideHash:

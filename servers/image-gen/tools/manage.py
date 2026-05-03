@@ -39,11 +39,12 @@ def get_image(image_id: str, include_base64: bool = True) -> dict:
     if not metadata:
         return {"success": False, "message": f"Image introuvable: {image_id}"}
     path = cache.get_image_path(sid)
+    # Don't echo absolute filesystem paths back to MCP callers — basename only.
     result = {
         "success": True,
         "image_id": sid,
         "metadata": metadata,
-        "path": str(path) if path else None,
+        "filename": path.name if path else None,
     }
     if include_base64 and path:
         result["base64"] = to_base64(path.read_bytes())

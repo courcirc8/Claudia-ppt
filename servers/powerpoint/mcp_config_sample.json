@@ -1,12 +1,15 @@
 {
+  "_comment": "Sample Claude Desktop / MCP client config for the PowerPoint server. Replace <ABS_PATH_TO_REPO> with the absolute path where you cloned ClaudIA-ppt.",
   "mcpServers": {
-    "word-document-server": {
-      "command": "D:\\BackDataService\\Office-Word-MCP-Server\\.venv\\Scripts\\python.exe",
+    "ppt": {
+      "command": "python3",
       "args": [
-        "D:\\BackDataService\\Office-Word-MCP-Server\\word_server.py"
+        "<ABS_PATH_TO_REPO>/ClaudIA-ppt/servers/powerpoint/ppt_mcp_server.py"
       ],
       "env": {
-        "PYTHONPATH": "D:\\BackDataService\\Office-Word-MCP-Server"
+        "PYTHONPATH": "<ABS_PATH_TO_REPO>/ClaudIA-ppt/servers/powerpoint",
+        "PPT_TEMPLATE_PATH": "<ABS_PATH_TO_REPO>/ClaudIA-ppt/servers/powerpoint/templates",
+        "PPT_WORKSPACE_ROOT": "<ABS_PATH_TO_REPO>/ClaudIA-ppt/workspace"
       }
     }
   }

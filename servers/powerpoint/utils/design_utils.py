@@ -296,11 +296,12 @@ def set_slide_gradient_background(slide, start_color: Tuple[int, int, int],
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
                 
-    except Exception:
-        pass  # Graceful fallback
+    except Exception as e:
+        import sys
+        print(f"[design_utils.add_image_background] swallowed: {e}", file=sys.stderr)
 
 
-def create_professional_gradient_background(slide, color_scheme: str = 'modern_blue', 
+def create_professional_gradient_background(slide, color_scheme: str = 'modern_blue',
                                           style: str = 'subtle', direction: str = 'diagonal') -> None:
     """
     Create a professional gradient background using predefined color schemes.
@@ -390,8 +391,9 @@ def format_shape(shape, fill_color: Tuple[int, int, int] = None,
         
         if line_width is not None:
             shape.line.width = Pt(line_width)
-    except Exception:
-        pass  # Graceful fallback
+    except Exception as e:
+        import sys
+        print(f"[design_utils.apply_shape_styling] swallowed: {e}", file=sys.stderr)
 
 
 # Image enhancement functions

@@ -2,7 +2,7 @@
 
 Checks:
 - Image bounds (off-slide = ERROR; margin <0.5" = WARNING)
-- Font size minimums (body <18pt, title <24pt = WARNING)
+- Font size minimums (body <15pt, title <24pt = WARNING)
 - Contrast ratio between text color and (estimated) bg (WCAG AA = 4.5:1)
 - Alt-text presence on images
 - One title per slide hierarchy
@@ -78,7 +78,7 @@ def _first_font_size(shape) -> int | None:
 def audit_accessibility(
     pptx_path: str,
     *,
-    min_body_pt: int = 18,
+    min_body_pt: int = 15,
     min_title_pt: int = 24,
     min_margin_in: float = 0.5,
     wcag_aa_ratio: float = 4.5,

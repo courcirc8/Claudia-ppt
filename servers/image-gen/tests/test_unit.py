@@ -30,7 +30,12 @@ class TestSafeImageId:
     def test_valid_hex(self, safe_module, vid):
         assert safe_module.safe_image_id(vid) == vid.lower()
 
-    @pytest.mark.parametrize("inv", ["xyz", "abc", "ABC123" * 10, "../etc", ""])
+    @pytest.mark.parametrize("inv", [
+        "xyz", "abc", "../etc", "",
+        "g" * 16,           # contains non-hex char
+        "abc" * 25,         # > 64 chars
+        "abc12",            # < 8 chars
+    ])
     def test_invalid(self, safe_module, inv):
         assert safe_module.safe_image_id(inv) == ""
 
@@ -154,7 +159,7 @@ class TestCache:
     def test_save_and_retrieve(self, sandbox, cache_module):
         png_bytes = sandbox["fake_png"]
         image_id = cache_module.save_image(png_bytes, metadata={"prompt": "test"})
-        assert len(image_id) == 16  # 16 hex chars
+        assert len(image_id) == 64  # full sha256 hex (was 16, now full to avoid 64-bit collision)
         # Retrieve
         path = cache_module.get_image_path(image_id)
         assert path is not None

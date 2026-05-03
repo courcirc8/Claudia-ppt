@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Any
 import os
 from mcp.server.fastmcp import FastMCP
 import utils as ppt_utils
+from safe_path import resolve_safe_path, workspace_root
 
 
 def register_presentation_tools(app: FastMCP, presentations: Dict, get_current_presentation_id, get_template_search_directories):
@@ -34,22 +35,27 @@ def register_presentation_tools(app: FastMCP, presentations: Dict, get_current_p
     @app.tool()
     def create_presentation_from_template(template_path: str, id: Optional[str] = None) -> Dict:
         """Create a new PowerPoint presentation from a template file."""
-        # Check if template file exists
-        if not os.path.exists(template_path):
-            # Try to find the template by searching in configured directories
-            search_dirs = get_template_search_directories()
-            template_name = os.path.basename(template_path)
-            
-            for directory in search_dirs:
-                potential_path = os.path.join(directory, template_name)
-                if os.path.exists(potential_path):
-                    template_path = potential_path
-                    break
-            else:
-                env_path_info = f" (PPT_TEMPLATE_PATH: {os.environ.get('PPT_TEMPLATE_PATH', 'not set')})" if os.environ.get('PPT_TEMPLATE_PATH') else ""
-                return {
-                    "error": f"Template file not found: {template_path}. Searched in {', '.join(search_dirs)}{env_path_info}"
-                }
+        # Only accept a basename — never honour absolute paths from MCP callers.
+        template_name = os.path.basename(template_path)
+        if not template_name or template_name in (".", "..") or "/" in template_name or "\\" in template_name:
+            return {"error": "template_path must be a filename (no path separators)"}
+
+        search_dirs = get_template_search_directories()
+        resolved = None
+        for directory in search_dirs:
+            candidate = os.path.realpath(os.path.join(directory, template_name))
+            # Confine candidate inside the directory to defeat traversal via odd basenames.
+            if not candidate.startswith(os.path.realpath(directory) + os.sep):
+                continue
+            if os.path.exists(candidate):
+                resolved = candidate
+                break
+        if resolved is None:
+            env_path_info = f" (PPT_TEMPLATE_PATH: {os.environ.get('PPT_TEMPLATE_PATH', 'not set')})" if os.environ.get('PPT_TEMPLATE_PATH') else ""
+            return {
+                "error": f"Template file not found: {template_name}. Searched in {', '.join(search_dirs)}{env_path_info}"
+            }
+        template_path = resolved
         
         # Create presentation from template
         try:
@@ -76,20 +82,19 @@ def register_presentation_tools(app: FastMCP, presentations: Dict, get_current_p
 
     @app.tool()
     def open_presentation(file_path: str, id: Optional[str] = None) -> Dict:
-        """Open an existing PowerPoint presentation from a file."""
-        # Check if file exists
-        if not os.path.exists(file_path):
-            return {
-                "error": f"File not found: {file_path}"
-            }
-        
-        # Open the presentation
+        """Open an existing PowerPoint presentation from a file (within workspace root)."""
         try:
-            pres = ppt_utils.open_presentation(file_path)
+            safe = resolve_safe_path(file_path, must_exist=True, require_pptx_ext=True)
+        except ValueError as e:
+            return {"error": str(e)}
+
+        try:
+            pres = ppt_utils.open_presentation(str(safe))
         except Exception as e:
             return {
                 "error": f"Failed to open presentation: {str(e)}"
             }
+        file_path = str(safe)
         
         # Generate an ID if not provided
         if id is None:
@@ -106,18 +111,22 @@ def register_presentation_tools(app: FastMCP, presentations: Dict, get_current_p
 
     @app.tool()
     def save_presentation(file_path: str, presentation_id: Optional[str] = None) -> Dict:
-        """Save a presentation to a file."""
-        # Use the specified presentation or the current one
+        """Save a presentation to a file (within workspace root, .pptx extension required)."""
         pres_id = presentation_id if presentation_id is not None else get_current_presentation_id()
-        
+
         if pres_id is None or pres_id not in presentations:
             return {
                 "error": "No presentation is currently loaded or the specified ID is invalid"
             }
-        
-        # Save the presentation
+
         try:
-            saved_path = ppt_utils.save_presentation(presentations[pres_id], file_path)
+            safe = resolve_safe_path(file_path, must_exist=False, require_pptx_ext=True)
+        except ValueError as e:
+            return {"error": str(e)}
+
+        try:
+            safe.parent.mkdir(parents=True, exist_ok=True)
+            saved_path = ppt_utils.save_presentation(presentations[pres_id], str(safe))
             return {
                 "message": f"Presentation saved to {saved_path}",
                 "file_path": saved_path
@@ -150,25 +159,26 @@ def register_presentation_tools(app: FastMCP, presentations: Dict, get_current_p
 
     @app.tool()
     def get_template_file_info(template_path: str) -> Dict:
-        """Get information about a template file including layouts and properties."""
-        # Check if template file exists
-        if not os.path.exists(template_path):
-            # Try to find the template by searching in configured directories
-            search_dirs = get_template_search_directories()
-            template_name = os.path.basename(template_path)
-            
-            for directory in search_dirs:
-                potential_path = os.path.join(directory, template_name)
-                if os.path.exists(potential_path):
-                    template_path = potential_path
-                    break
-            else:
-                return {
-                    "error": f"Template file not found: {template_path}. Searched in {', '.join(search_dirs)}"
-                }
-        
+        """Get information about a template file (basename resolved against template dirs)."""
+        template_name = os.path.basename(template_path)
+        if not template_name or template_name in (".", "..") or "/" in template_name or "\\" in template_name:
+            return {"error": "template_path must be a filename (no path separators)"}
+
+        search_dirs = get_template_search_directories()
+        resolved = None
+        for directory in search_dirs:
+            candidate = os.path.realpath(os.path.join(directory, template_name))
+            if not candidate.startswith(os.path.realpath(directory) + os.sep):
+                continue
+            if os.path.exists(candidate):
+                resolved = candidate
+                break
+        if resolved is None:
+            return {
+                "error": f"Template file not found: {template_name}. Searched in {', '.join(search_dirs)}"
+            }
         try:
-            return ppt_utils.get_template_info(template_path)
+            return ppt_utils.get_template_info(resolved)
         except Exception as e:
             return {
                 "error": f"Failed to get template info: {str(e)}"

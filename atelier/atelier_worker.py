@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # PROJECT = the presentation project being processed (e.g. presentations/droit_des_familles)
@@ -60,15 +60,21 @@ def log(msg: str, level: str = "INFO"):
     print(f"[{ts}] {level:5s} {msg}", flush=True)
 
 
+def _osa_escape(s: str) -> str:
+    """Escape \\ and \" for safe interpolation inside an AppleScript string literal."""
+    return str(s).replace("\\", "\\\\").replace('"', '\\"')
+
+
 def notify_mac(title: str, message: str):
     """macOS notification via osascript. No-op on other platforms."""
     if sys.platform != "darwin":
         return
     try:
-        subprocess.run([
-            "osascript", "-e",
-            f'display notification "{message}" with title "{title}" sound name "Glass"',
-        ], check=False, capture_output=True)
+        script = (
+            f'display notification "{_osa_escape(message)}" '
+            f'with title "{_osa_escape(title)}" sound name "Glass"'
+        )
+        subprocess.run(["osascript", "-e", script], check=False, capture_output=True)
     except Exception:
         pass
 
@@ -127,7 +133,7 @@ def execute_brief(spec: dict) -> dict:
     """
     code = spec.get("code", "UNKNOWN")
     action = spec.get("action", "build_pptx")
-    started = datetime.utcnow().isoformat() + "Z"
+    started = datetime.now(timezone.utc).isoformat()
 
     log(f"Brief {code} — action={action}")
     log(f"  style={spec.get('style', {}).get('id')}, palette={spec.get('palette', {}).get('id')}, "
@@ -177,17 +183,51 @@ def emit_resume_line(status: dict):
     print(f"\n>>> RESUME: code={code} status={status['status']} brief=atelier/inbox/{code}.md\n", flush=True)
 
 
+def _is_file_stable(path: Path, *, settle_seconds: float = 1.0) -> bool:
+    """Return True if path's size is unchanged after settle_seconds.
+
+    Defends against reading a brief that's still being flushed by the writer.
+    """
+    try:
+        s1 = path.stat().st_size
+    except FileNotFoundError:
+        return False
+    time.sleep(settle_seconds)
+    try:
+        s2 = path.stat().st_size
+    except FileNotFoundError:
+        return False
+    return s1 == s2 and s1 > 0
+
+
 def process_brief(md_path: Path):
     """Move brief to inbox, parse, execute, write status."""
+    if not _is_file_stable(md_path):
+        log(f"Brief {md_path.name} encore en cours d'écriture, on attendra le prochain cycle", "WARN")
+        return
+
     text = md_path.read_text(encoding="utf-8")
     spec = parse_brief(text)
-    code = spec.get("code") or "UNKNOWN"
+    code = spec.get("code")
+    if not code:
+        # Refuser plutôt qu'écraser systématiquement UNKNOWN.md
+        rejected_dir = INBOX / "_rejected"
+        rejected_dir.mkdir(parents=True, exist_ok=True)
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        target = rejected_dir / f"{ts}-{md_path.name}"
+        try:
+            shutil.move(str(md_path), str(target))
+        except Exception as e:
+            log(f"Impossible de déplacer le brief sans code: {e}", "ERROR")
+        log(f"Brief sans champ Code rejeté → {target}", "ERROR")
+        notify_mac("Atelier — brief rejeté", "Brief sans champ **Code**: ATL-XXXX")
+        return
 
     # Move into inbox with canonical name
-    target = INBOX / f"{code}.md"
     INBOX.mkdir(parents=True, exist_ok=True)
     OUTBOX.mkdir(parents=True, exist_ok=True)
     PROCESSED.mkdir(parents=True, exist_ok=True)
+    target = INBOX / f"{code}.md"
 
     if md_path.parent != INBOX:
         shutil.move(str(md_path), str(target))

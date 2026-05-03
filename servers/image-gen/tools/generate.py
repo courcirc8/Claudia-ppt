@@ -180,11 +180,14 @@ def generate_image(
     if seed is not None:
         api_input["seed"] = int(seed)
 
+    estimated = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+    cache.enforce_daily_cap(estimated)
+
     output = call_replicate(cfg["id"], api_input)
     image_url = extract_url(output)
     image_bytes = download_image(image_url)
 
-    cost_usd = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+    cost_usd = estimated
     image_id = cache.save_image(
         image_bytes,
         metadata={
@@ -266,11 +269,14 @@ def image_to_image(
     if model in ("flux-pro",):
         api_input["prompt_strength"] = float(strength)
 
+    estimated = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+    cache.enforce_daily_cap(estimated)
+
     output = call_replicate(cfg["id"], api_input)
     image_url = extract_url(output)
     image_bytes = download_image(image_url)
 
-    cost_usd = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+    cost_usd = estimated
     new_id = cache.save_image(
         image_bytes,
         metadata={
@@ -333,11 +339,15 @@ def generate_batch(
 
     results = []
     total_cost = 0.0
+    cfg = models.MODELS[model]
+    if max_resolution is None:
+        max_resolution = cfg["resolution_default"]
+    px, quality = parse_max_resolution(max_resolution)
+    per_image_cost = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+    # Vérifier le coût total du batch d'un seul coup, avant d'envoyer un seul appel.
+    cache.enforce_daily_cap(per_image_cost * len(prompts))
+
     for prompt in prompts:
-        cfg = models.MODELS[model]
-        if max_resolution is None:
-            max_resolution = cfg["resolution_default"]
-        px, quality = parse_max_resolution(max_resolution)
         final_prompt = enhance_prompt(prompt, enhance)
 
         refs = [style_bytes] if style_bytes else []
@@ -351,7 +361,7 @@ def generate_batch(
         )
         output = call_replicate(cfg["id"], api_input)
         image_bytes = download_image(extract_url(output))
-        cost = models.estimate_cost(model, max_resolution if cfg["resolution_type"] == "quality" else px)
+        cost = per_image_cost
         total_cost += cost
         new_id = cache.save_image(
             image_bytes,

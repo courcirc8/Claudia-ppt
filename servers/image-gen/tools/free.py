@@ -1,7 +1,11 @@
 """Fallback gratuit via Pollinations AI — pas de token requis."""
 from __future__ import annotations
 
+import io
+from urllib.parse import quote
+
 import httpx
+from PIL import Image
 
 import cache
 import config
@@ -29,7 +33,9 @@ def generate_image_free(
     if not (64 <= int(width) <= 4096) or not (64 <= int(height) <= 4096):
         raise ValueError("Dimensions hors plage [64, 4096]")
 
-    url = f"{config.POLLINATIONS_BASE_URL}/{prompt}"
+    # Le prompt est interpolé dans le path → l'échapper sinon "/", "?", "#" cassent l'URL
+    # ou permettent de cibler d'autres endpoints Pollinations.
+    url = f"{config.POLLINATIONS_BASE_URL}/{quote(prompt, safe='')}"
     params = {
         "width": int(width),
         "height": int(height),
@@ -40,6 +46,16 @@ def generate_image_free(
         response = client.get(url, params=params, follow_redirects=True)
         response.raise_for_status()
         image_bytes = response.content
+
+    # Vérifier que c'est bien une image (defense en profondeur contre upstream malicieux)
+    ctype = response.headers.get("content-type", "").lower()
+    if not ctype.startswith("image/"):
+        raise RuntimeError(f"Pollinations a renvoyé un content-type non-image: {ctype!r}")
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            img.verify()
+    except Exception as e:
+        raise RuntimeError(f"Pollinations a renvoyé des bytes non-image: {e}")
 
     image_id = cache.save_image(
         image_bytes,

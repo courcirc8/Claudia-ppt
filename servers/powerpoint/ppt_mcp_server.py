@@ -5,10 +5,10 @@ Consolidated version with 20 tools organized into multiple modules.
 """
 import os
 import argparse
+import threading
 from typing import Dict, Any
 from mcp.server.fastmcp import FastMCP
 
-# import utils  # Currently unused
 from tools import (
     register_presentation_tools,
     register_content_tools,
@@ -27,7 +27,9 @@ app = FastMCP(
     name="ppt-mcp-server"
 )
 
-# Global state to store presentations in memory
+# Global state — protected by _state_lock for HTTP/SSE concurrent transports.
+# (FastMCP stdio is single-threaded so the lock is uncontended in that mode.)
+_state_lock = threading.RLock()
 presentations = {}
 current_presentation_id = None
 
@@ -69,18 +71,21 @@ def get_template_search_directories():
 
 def get_current_presentation():
     """Get the current presentation object or raise an error if none is loaded."""
-    if current_presentation_id is None or current_presentation_id not in presentations:
-        raise ValueError("No presentation is currently loaded. Please create or open a presentation first.")
-    return presentations[current_presentation_id]
+    with _state_lock:
+        if current_presentation_id is None or current_presentation_id not in presentations:
+            raise ValueError("No presentation is currently loaded. Please create or open a presentation first.")
+        return presentations[current_presentation_id]
 
 def get_current_presentation_id():
     """Get the current presentation ID."""
-    return current_presentation_id
+    with _state_lock:
+        return current_presentation_id
 
 def set_current_presentation_id(pres_id):
     """Set the current presentation ID."""
     global current_presentation_id
-    current_presentation_id = pres_id
+    with _state_lock:
+        current_presentation_id = pres_id
 
 def validate_parameters(params):
     """
@@ -153,7 +158,7 @@ def add_shape_direct(slide, shape_type: str, left: float, top: float, width: flo
         'hexagon': 10,
         'heptagon': 11,
         'octagon': 12,
-        'star': 12,  # This is STAR_5_POINTS (value 12)
+        'star': 92,  # STAR_5_POINTS (MSO autoshape 92, NOT 12 — that's octagon)
         'arrow': 13,
         'cloud': 35,
         'heart': 21,
@@ -187,45 +192,7 @@ def add_shape_direct(slide, shape_type: str, left: float, top: float, width: flo
     except Exception as e:
         raise ValueError(f"Failed to create '{shape_type}' shape using direct value {shape_value}: {str(e)}")
 
-# ---- Custom presentation management wrapper ----
-
-class PresentationManager:
-    """Wrapper to handle presentation state updates."""
-    
-    def __init__(self, presentations_dict):
-        self.presentations = presentations_dict
-    
-    def store_presentation(self, pres, pres_id):
-        """Store a presentation and set it as current."""
-        self.presentations[pres_id] = pres
-        set_current_presentation_id(pres_id)
-        return pres_id
-
 # ---- Register Tools ----
-
-# Create presentation manager wrapper
-presentation_manager = PresentationManager(presentations)
-
-# Wrapper functions to handle state management
-def create_presentation_wrapper(original_func):
-    """Wrapper to handle presentation creation with state management."""
-    def wrapper(*args, **kwargs):
-        result = original_func(*args, **kwargs)
-        if "presentation_id" in result and result["presentation_id"] in presentations:
-            set_current_presentation_id(result["presentation_id"])
-        return result
-    return wrapper
-
-def open_presentation_wrapper(original_func):
-    """Wrapper to handle presentation opening with state management."""
-    def wrapper(*args, **kwargs):
-        result = original_func(*args, **kwargs)
-        if "presentation_id" in result and result["presentation_id"] in presentations:
-            set_current_presentation_id(result["presentation_id"])
-        return result
-    return wrapper
-
-# Register all tool modules
 register_presentation_tools(
     app, 
     presentations, 
@@ -330,46 +297,54 @@ register_transition_tools(
 @app.tool()
 def list_presentations() -> Dict:
     """List all loaded presentations."""
-    return {
-        "presentations": [
-            {
-                "id": pres_id,
-                "slide_count": len(pres.slides),
-                "is_current": pres_id == current_presentation_id
-            }
-            for pres_id, pres in presentations.items()
-        ],
-        "current_presentation_id": current_presentation_id,
-        "total_presentations": len(presentations)
-    }
+    with _state_lock:
+        return {
+            "presentations": [
+                {
+                    "id": pres_id,
+                    "slide_count": len(pres.slides),
+                    "is_current": pres_id == current_presentation_id
+                }
+                for pres_id, pres in presentations.items()
+            ],
+            "current_presentation_id": current_presentation_id,
+            "total_presentations": len(presentations)
+        }
 
 @app.tool()
 def switch_presentation(presentation_id: str) -> Dict:
     """Switch to a different loaded presentation."""
-    if presentation_id not in presentations:
-        return {
-            "error": f"Presentation '{presentation_id}' not found. Available presentations: {list(presentations.keys())}"
-        }
-    
     global current_presentation_id
-    old_id = current_presentation_id
-    current_presentation_id = presentation_id
-    
-    return {
-        "message": f"Switched from presentation '{old_id}' to '{presentation_id}'",
-        "previous_presentation_id": old_id,
-        "current_presentation_id": current_presentation_id
-    }
+    with _state_lock:
+        if presentation_id not in presentations:
+            return {
+                "error": f"Presentation '{presentation_id}' not found. Available presentations: {list(presentations.keys())}"
+            }
+        old_id = current_presentation_id
+        current_presentation_id = presentation_id
+        return {
+            "message": f"Switched from presentation '{old_id}' to '{presentation_id}'",
+            "previous_presentation_id": old_id,
+            "current_presentation_id": current_presentation_id
+        }
 
 @app.tool()
 def get_server_info() -> Dict:
     """Get information about the MCP server."""
+    # Compute the real tool count from FastMCP's registry instead of a stale constant.
+    try:
+        registered_tools = len(getattr(getattr(app, "_tool_manager", None), "_tools", {}) or {})
+    except Exception:
+        registered_tools = -1
+    with _state_lock:
+        loaded = len(presentations)
+        current = current_presentation_id
     return {
         "name": "PowerPoint MCP Server - Enhanced Edition",
         "version": "2.1.0",
-        "total_tools": 32,  # Organized into 11 specialized modules
-        "loaded_presentations": len(presentations),
-        "current_presentation": current_presentation_id,
+        "total_tools": registered_tools,
+        "loaded_presentations": loaded,
+        "current_presentation": current,
         "features": [
             "Presentation Management (7 tools)",
             "Content Management (6 tools)", 
@@ -403,12 +378,17 @@ def get_server_info() -> Dict:
     }
 
 # ---- Main Function ----
-def main(transport: str = "stdio", port: int = 8000):
+def main(transport: str = "stdio", port: int = 8000, host: str = "127.0.0.1"):
+    # WARNING: HTTP/SSE transports do NOT carry authentication. Bind to
+    # loopback by default so a misconfigured server isn't network-reachable.
+    # Set host=0.0.0.0 explicitly only if you front it with auth (reverse proxy, etc.).
     if transport == "http":
         import asyncio
-        # Set the port for HTTP transport
         app.settings.port = port
-        # Start the FastMCP server with HTTP transport
+        app.settings.host = host
+        if host != "127.0.0.1":
+            print(f"⚠️  HTTP transport bound to {host} without auth — exposed to network.",
+                  flush=True)
         try:
             app.run(transport='streamable-http')
         except asyncio.exceptions.CancelledError:
@@ -417,13 +397,16 @@ def main(transport: str = "stdio", port: int = 8000):
             print("Server stopped by user.")
         except Exception as e:
             print(f"Error starting server: {e}")
-            
+
     elif transport == "sse":
-        # Run the FastMCP server in SSE (Server Side Events) mode
+        app.settings.host = host
+        app.settings.port = port
+        if host != "127.0.0.1":
+            print(f"⚠️  SSE transport bound to {host} without auth — exposed to network.",
+                  flush=True)
         app.run(transport='sse')
-        
+
     else:
-        # Run the FastMCP server
         app.run(transport='stdio')
 
 if __name__ == "__main__":
@@ -446,5 +429,11 @@ if __name__ == "__main__":
         default=8000,
         help="Port to run the MCP server on (default: 8000)"
     )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Host to bind for http/sse transports (default: 127.0.0.1)"
+    )
     args = parser.parse_args()
-    main(args.transport, args.port)
+    main(args.transport, args.port, args.host)

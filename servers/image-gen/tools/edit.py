@@ -61,6 +61,7 @@ def inpaint(
         "output_format": "png",
         "number_of_images": 1,
     }
+    cache.enforce_daily_cap(models.estimate_cost("gpt-image-2", "medium"))
     output = call_replicate(cfg["id"], api_input)
     image_url = extract_url(output)
     new_bytes = download_image(image_url)
@@ -106,6 +107,7 @@ def replace_background(
         "output_format": "png",
         "number_of_images": 1,
     }
+    cache.enforce_daily_cap(models.estimate_cost("gpt-image-2", "medium"))
     output = call_replicate(cfg["id"], api_input)
     new_bytes = download_image(extract_url(output))
     cost_usd = models.estimate_cost("gpt-image-2", "medium")
@@ -190,8 +192,8 @@ def register_image(file_path: str | None = None, image_base64: str | None = None
         image_base64: alternative — image encodée en base64
     """
     if file_path:
-        from pathlib import Path
-        p = Path(file_path).expanduser().resolve()
+        from safe_path import resolve_upload_path
+        p = resolve_upload_path(file_path)
         if not p.exists():
             raise ValueError(f"Fichier introuvable: {file_path}")
         if not p.is_file():
@@ -200,7 +202,6 @@ def register_image(file_path: str | None = None, image_base64: str | None = None
         if p.stat().st_size > 50 * 1024 * 1024:
             raise ValueError("Fichier trop gros (max 50 Mo)")
         image_bytes = p.read_bytes()
-        suffix = p.suffix.lower().lstrip(".") or "png"
     elif image_base64:
         if image_base64.startswith("data:"):
             image_base64 = image_base64.split(",", 1)[1]
@@ -208,9 +209,9 @@ def register_image(file_path: str | None = None, image_base64: str | None = None
             image_bytes = base64.b64decode(image_base64)
         except Exception as e:
             raise ValueError(f"base64 invalide: {e}")
-        suffix = "png"
     else:
         raise ValueError("Fournir file_path ou image_base64")
+    suffix = "png"  # overwritten below from PIL.Image.format
 
     # Vérifier que c'est une image valide
     try:
@@ -230,7 +231,6 @@ def register_image(file_path: str | None = None, image_base64: str | None = None
             "source": "user_upload",
             "width": w,
             "height": h,
-            "original_path": file_path if file_path else None,
         },
         suffix=suffix,
     )

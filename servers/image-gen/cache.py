@@ -11,27 +11,35 @@ from safe import safe_image_id
 
 
 def compute_image_id(data: bytes) -> str:
-    """Retourne les 16 premiers chars du sha256 — id compact mais robuste à la collision."""
-    return hashlib.sha256(data).hexdigest()[:16]
+    """sha256 complet (64 hex chars) — élimine les collisions à 64 bits du tronqué."""
+    return hashlib.sha256(data).hexdigest()
 
 
 def save_image(image_bytes: bytes, metadata: dict, suffix: str = "png") -> str:
-    """Sauve l'image + métadonnées dans le cache. Retourne l'image_id."""
+    """Sauve l'image + métadonnées dans le cache. Retourne l'image_id (sha256 hex).
+
+    Écriture atomique : on écrit d'abord en .tmp puis rename, donc aucun reader
+    ne peut observer un PNG/JSON partiellement écrit.
+    """
     image_id = compute_image_id(image_bytes)
     img_path = config.CACHE_DIR / f"{image_id}.{suffix}"
     meta_path = config.CACHE_DIR / f"{image_id}.json"
 
-    # Pas de doublon : si déjà présent, on incrémente juste le compteur d'usage
+    # Pas de doublon : si déjà présent ET bytes identiques, on incrémente le compteur.
+    # Pour sha256 complet la probabilité de collision est négligeable, mais on vérifie
+    # quand même les bytes par défense en profondeur.
     if img_path.exists() and meta_path.exists():
         try:
-            existing = json.loads(meta_path.read_text(encoding="utf-8"))
-            existing["hit_count"] = existing.get("hit_count", 1) + 1
-            meta_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8")
-        except Exception:
-            pass
-        return image_id
+            existing_bytes = img_path.read_bytes()
+            if existing_bytes == image_bytes:
+                existing = json.loads(meta_path.read_text(encoding="utf-8"))
+                existing["hit_count"] = existing.get("hit_count", 1) + 1
+                _atomic_write_text(meta_path, json.dumps(existing, indent=2, ensure_ascii=False))
+                return image_id
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"[cache] avertissement metadata illisible {meta_path}: {e}", file=__import__("sys").stderr)
 
-    img_path.write_bytes(image_bytes)
+    _atomic_write_bytes(img_path, image_bytes)
     metadata = {
         **metadata,
         "image_id": image_id,
@@ -41,8 +49,22 @@ def save_image(image_bytes: bytes, metadata: dict, suffix: str = "png") -> str:
         "suffix": suffix,
         "hit_count": 1,
     }
-    meta_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+    _atomic_write_text(meta_path, json.dumps(metadata, indent=2, ensure_ascii=False))
     return image_id
+
+
+def _atomic_write_bytes(path: Path, data: bytes) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_bytes(data)
+    import os as _os
+    _os.replace(tmp, path)
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    import os as _os
+    _os.replace(tmp, path)
 
 
 def get_image_path(image_id: str) -> Path | None:
@@ -102,7 +124,8 @@ def list_images(limit: int = 50, model_filter: str | None = None) -> list[dict]:
 
 
 def log_cost(model_key: str, cost_usd: float, prompt: str, image_id: str | None = None) -> None:
-    """Append une ligne au ledger costs.jsonl."""
+    """Append une ligne au ledger costs.jsonl (atomic via fcntl lock)."""
+    import fcntl
     entry = {
         "ts": time.time(),
         "ts_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -111,8 +134,16 @@ def log_cost(model_key: str, cost_usd: float, prompt: str, image_id: str | None 
         "prompt": prompt[:200],
         "image_id": image_id,
     }
+    line = json.dumps(entry, ensure_ascii=False) + "\n"
     with open(config.COSTS_PATH, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        try:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+            f.write(line)
+        finally:
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
 
 
 def get_cost_summary() -> dict:
@@ -138,3 +169,40 @@ def get_cost_summary() -> dict:
         "by_model": {k: round(v, 4) for k, v in by_model.items()},
         "count": count,
     }
+
+
+def get_today_spend_usd() -> float:
+    """Somme des coûts loggués depuis 00:00:00 UTC aujourd'hui."""
+    if not config.COSTS_PATH.exists():
+        return 0.0
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    total = 0.0
+    with open(config.COSTS_PATH, encoding="utf-8") as f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except Exception:
+                continue
+            ts_iso = e.get("ts_iso") or ""
+            if ts_iso.startswith(today):
+                total += float(e.get("cost_usd", 0))
+    return round(total, 4)
+
+
+def enforce_daily_cap(estimated_cost_usd: float) -> None:
+    """Lève RuntimeError si l'appel ferait dépasser MAX_DAILY_USD.
+
+    MAX_DAILY_USD=0 désactive le plafond.
+    """
+    cap = float(getattr(config, "MAX_DAILY_USD", 0) or 0)
+    if cap <= 0:
+        return
+    spent = get_today_spend_usd()
+    projected = spent + max(0.0, float(estimated_cost_usd))
+    if projected > cap:
+        raise RuntimeError(
+            f"Plafond journalier atteint : déjà ${spent:.2f} dépensés, "
+            f"cet appel ajouterait ${estimated_cost_usd:.2f} → ${projected:.2f} "
+            f"(plafond ${cap:.2f}). Définir MAX_DAILY_USD=0 pour désactiver, "
+            "ou attendre minuit UTC."
+        )

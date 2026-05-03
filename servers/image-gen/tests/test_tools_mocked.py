@@ -296,10 +296,16 @@ class TestRegisterImage:
         with pytest.raises(ValueError):
             register_image()
 
-    def test_inexistent_file_raises(self, sandbox):
+    def test_inexistent_file_raises(self, sandbox, tmp_path):
         from tools.edit import register_image
         with pytest.raises(ValueError, match="introuvable"):
-            register_image(file_path="/tmp/__nope__.png")
+            register_image(file_path=str(tmp_path / "__nope__.png"))
+
+    def test_path_traversal_blocked(self, sandbox):
+        from tools.edit import register_image
+        # En dehors de IMAGE_GEN_UPLOAD_ROOT (= tmp_path) → refusé
+        with pytest.raises(ValueError, match="hors du répertoire"):
+            register_image(file_path="/etc/passwd")
 
 
 # =============================================================================

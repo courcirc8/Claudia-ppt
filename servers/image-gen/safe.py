@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-_IMAGE_ID_RE = re.compile(r"^[a-f0-9]{8,32}$")
+_IMAGE_ID_RE = re.compile(r"^[a-f0-9]{8,64}$")
 
 
 def safe_filename(name) -> str:

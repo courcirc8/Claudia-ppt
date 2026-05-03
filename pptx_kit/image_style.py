@@ -123,11 +123,24 @@ def register_image(project_root: str | Path, slide_idx: int, image_path: str | P
     mp.write_text(json.dumps(data, indent=2, ensure_ascii=False))
 
 
+_IMAGE_ID_RE = __import__("re").compile(r"^[A-Za-z0-9_-]+$")
+
+
 def adopt_from_cache(image_id: str, project_root: str | Path,
                        cache_root: str = "~/.cache/image-gen") -> Path:
-    """Copy an image-gen cached PNG into <project>/images/<image_id>.png."""
-    cache_root = Path(cache_root).expanduser()
-    src = cache_root / f"{image_id}.png"
+    """Copy an image-gen cached PNG into <project>/images/<image_id>.png.
+
+    image_id is restricted to [A-Za-z0-9_-]+ to defeat path traversal
+    (e.g. "../../etc/passwd").
+    """
+    if not isinstance(image_id, str) or not _IMAGE_ID_RE.match(image_id):
+        raise ValueError(f"image_id invalide (must match [A-Za-z0-9_-]+): {image_id!r}")
+    cache_root = Path(cache_root).expanduser().resolve()
+    src = (cache_root / f"{image_id}.png").resolve()
+    try:
+        src.relative_to(cache_root)
+    except ValueError:
+        raise ValueError("image_id résout hors du cache root")
     if not src.exists():
         raise FileNotFoundError(src)
     dst_dir = Path(project_root) / "images"

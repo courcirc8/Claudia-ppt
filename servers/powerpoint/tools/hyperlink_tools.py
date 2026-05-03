@@ -4,8 +4,33 @@ Implements hyperlink operations for text shapes and runs.
 """
 
 from typing import Dict, List, Optional, Any
+from urllib.parse import urlparse
 
-def register_hyperlink_tools(app, presentations, get_current_presentation_id, validate_parameters, 
+# Schemes we allow in delivered .pptx hyperlinks. javascript:, file:, data: and
+# friends are blocked because they enable link-injection attacks against viewers.
+_ALLOWED_SCHEMES = {"http", "https", "mailto", "tel"}
+
+
+def _validate_hyperlink_url(url: str) -> Optional[str]:
+    """Return None if url is acceptable, else an error message."""
+    if not isinstance(url, str) or not url.strip():
+        return "URL must be a non-empty string"
+    try:
+        parsed = urlparse(url.strip())
+    except Exception as e:
+        return f"Invalid URL: {e}"
+    scheme = (parsed.scheme or "").lower()
+    if scheme not in _ALLOWED_SCHEMES:
+        return (
+            f"Hyperlink scheme '{scheme}' not allowed. "
+            f"Allowed: {sorted(_ALLOWED_SCHEMES)}"
+        )
+    if scheme in ("http", "https") and not parsed.netloc:
+        return "http(s) URL must include a host"
+    return None
+
+
+def register_hyperlink_tools(app, presentations, get_current_presentation_id, validate_parameters,
                           is_positive, is_non_negative, is_in_range, is_valid_rgb):
     """Register hyperlink management tools with the FastMCP app."""
     
@@ -82,7 +107,10 @@ def register_hyperlink_tools(app, presentations, get_current_presentation_id, va
             if operation == "add":
                 if not text or not url:
                     return {"error": "Both 'text' and 'url' are required for adding hyperlinks"}
-                
+                err = _validate_hyperlink_url(url)
+                if err:
+                    return {"error": err}
+
                 # Add new text run with hyperlink
                 paragraph = shape.text_frame.paragraphs[0]
                 run = paragraph.add_run()
@@ -98,7 +126,10 @@ def register_hyperlink_tools(app, presentations, get_current_presentation_id, va
             elif operation == "update":
                 if not url:
                     return {"error": "URL is required for updating hyperlinks"}
-                
+                err = _validate_hyperlink_url(url)
+                if err:
+                    return {"error": err}
+
                 # Update existing hyperlink
                 paragraphs = shape.text_frame.paragraphs
                 if run_index < len(paragraphs[0].runs):

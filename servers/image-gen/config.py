@@ -30,6 +30,13 @@ COSTS_PATH = CACHE_DIR / "costs.jsonl"
 # Désactiver l'enhancement automatique des prompts
 AUTO_ENHANCE_PROMPT = os.getenv("AUTO_ENHANCE_PROMPT", "true").lower() in ("true", "1", "yes")
 
+# Plafond de dépense journalier (USD). 0 = pas de plafond. Défaut 5$.
+# Toute génération payante consulte le ledger costs.jsonl avant l'appel.
+try:
+    MAX_DAILY_USD = float(os.getenv("MAX_DAILY_USD", "5"))
+except ValueError:
+    MAX_DAILY_USD = 5.0
+
 
 def require_replicate_token() -> str:
     """Retourne le token, ou raise une erreur claire avec marche-à-suivre."""

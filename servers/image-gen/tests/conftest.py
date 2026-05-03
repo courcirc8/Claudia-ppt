@@ -82,6 +82,11 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "COSTS_PATH", tmp_path / "costs.jsonl")
     monkeypatch.setattr(cache, "config", config)
 
+    # Sandbox d'upload : autoriser tmp_path pour register_image
+    monkeypatch.setenv("IMAGE_GEN_UPLOAD_ROOT", str(tmp_path))
+    # Pas de plafond de dépense pendant les tests
+    monkeypatch.setattr(config, "MAX_DAILY_USD", 0.0)
+
     # Token factice (pour passer le require_replicate_token)
     monkeypatch.setattr(config, "REPLICATE_API_TOKEN", "r8_test_dummy_token")
 

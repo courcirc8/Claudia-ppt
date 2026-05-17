@@ -23,6 +23,11 @@ import models  # noqa: E402
 from tools.generate import generate_image, image_to_image, generate_batch  # noqa: E402
 from tools.slide import generate_for_slide  # noqa: E402
 from tools.free import generate_image_free  # noqa: E402
+from tools.ollama_local import (  # noqa: E402
+    generate_image_ollama,
+    list_ollama_image_models,
+    pull_ollama_model,
+)
 from tools.edit import inpaint, replace_background, outpaint, register_image  # noqa: E402
 from tools.process import remove_background, upscale, vectorize, seamless_tile  # noqa: E402
 from tools.manage import list_images, get_image, delete_image, get_costs  # noqa: E402
@@ -166,6 +171,69 @@ def tool_generate_image_free(
     rapides. model='flux' (qualité) ou 'turbo' (vitesse).
     """
     return generate_image_free(prompt=prompt, width=width, height=height, model=model)
+
+
+# =============================================================================
+# Génération locale via Ollama MLX (3 outils, Apple Silicon, coût $0)
+# =============================================================================
+
+@app.tool()
+def tool_generate_image_ollama(
+    prompt: str,
+    model: str = "x/flux2-klein:9b",
+    size: str = "1024x1024",
+    target_size: str | None = None,
+    resize_mode: str = "fit",
+    seed: int | None = None,
+    steps: int | None = None,
+) -> dict:
+    """Génère une image **localement** via Ollama MLX (Apple Silicon, coût $0).
+
+    Nécessite Ollama ≥ 0.23.3 (0.23.2 a un panic) avec un modèle image-gen pullé :
+        ollama pull x/flux2-klein:9b   # FLUX.2 Klein 9B (~11 GB, qualité haute)
+        ollama pull x/flux2-klein:4b   # FLUX.2 Klein 4B (plus rapide)
+        ollama pull x/z-image-turbo    # Z-Image Turbo (drafts ultra-rapides)
+
+    Avantages : 100% local (aucune donnée envoyée), coût zéro, illimité.
+    Inconvénients : ~30-60s/image sur M-series (vs 5-15s cloud).
+
+    **Résolutions** : Ollama 0.24 ignore `size` et sort toujours 1024×1024.
+    Pour obtenir un autre format (16:9 pour cover PPT, 4:3 pour infographic),
+    utiliser `target_size` — resize PIL post-génération.
+
+    Exemples target_size : '1920x1080' (16:9 cover), '1024x768' (4:3),
+    '768x1024' (portrait 3:4), '1280x720' (720p), '2048x2048' (carré upscalé).
+
+    resize_mode :
+      - 'fit'     : letterbox blanc, image entière visible (défaut)
+      - 'cover'   : crop centré, remplit le canvas (perd des bords)
+      - 'stretch' : déforme (déconseillé)
+    """
+    return generate_image_ollama(
+        prompt=prompt, model=model, size=size,
+        target_size=target_size, resize_mode=resize_mode,
+        seed=seed, steps=steps,
+    )
+
+
+@app.tool()
+def tool_list_ollama_image_models() -> dict:
+    """Liste les modèles image-gen Ollama installés localement.
+
+    Retourne {ollama_running, installed[], image_candidates[], known_image_models}.
+    Utile pour choisir un model avant `generate_image_ollama`.
+    """
+    return list_ollama_image_models()
+
+
+@app.tool()
+def tool_pull_ollama_model(model: str = "x/flux2-klein:9b") -> dict:
+    """Télécharge un modèle image-gen Ollama (peut prendre 10-30 min, ~11 GB).
+
+    Wrapper synchrone sur `ollama pull <model>`. Préfère lancer ce pull depuis
+    un terminal pour voir la progression.
+    """
+    return pull_ollama_model(model=model)
 
 
 # =============================================================================

@@ -1,8 +1,8 @@
-# 🎨 image-gen — MCP Génération d'Images v2.0
+# 🎨 image-gen — MCP Génération d'Images v2.1
 
-MCP serveur de génération d'image pour Claude Code / Cursor, backed par **Replicate** (8 modèles SOTA), conçu pour automatiser la production visuelle de présentations PowerPoint.
+MCP serveur de génération d'image pour Claude Code / Cursor, backed par **Replicate** (8 modèles SOTA) **+ Ollama MLX local** (Apple Silicon, coût $0), conçu pour automatiser la production visuelle de présentations PowerPoint.
 
-**19 outils** : génération, retouche, post-traitement, gestion, cohérence stylistique.
+**22 outils** : génération cloud + local, retouche, post-traitement, gestion, cohérence stylistique.
 
 ## 🚀 Installation
 
@@ -41,6 +41,9 @@ Dans `~/.cursor/mcp.json` :
 | `generate_batch` | N images cohérentes avec optionnel style ref |
 | `generate_for_slide` | Preset par rôle PPT : `cover`, `icon`, `photo`, `infographic`, `headshot`, `background`, `section`, `illustration` |
 | `generate_image_free` | Fallback gratuit Pollinations (sans token) |
+| `generate_image_ollama` | **Local Apple Silicon via Ollama MLX** ($0, FLUX.2 Klein 9B) |
+| `list_ollama_image_models` | Liste les modèles image-gen Ollama installés |
+| `pull_ollama_model` | Télécharge un modèle Ollama (wrapper `ollama pull`) |
 
 ### Édition (4)
 
@@ -112,6 +115,36 @@ Heuristique pure-string (pas de LLM appelé) qui calcule un score :
 
 Le retour inclut `auto_select_reason` pour savoir pourquoi tel modèle a été choisi.
 
+## 🖥️ Génération locale via Ollama MLX (coût $0)
+
+Sur Apple Silicon, **Ollama 0.23.3+** peut exécuter FLUX.2 Klein localement
+via MLX. Aucune donnée n'est envoyée en cloud, coût zéro, illimité.
+
+```bash
+# 1. Installer Ollama ≥ 0.23.3 (0.23.2 a un panic dans le text-encoder Qwen3)
+brew install --cask ollama-app
+open -a Ollama
+
+# 2. Pull le modèle (~11 GB, 5-15 min selon BP)
+ollama pull x/flux2-klein:9b
+
+# 3. Depuis Claude / Cursor :
+#    generate_image_ollama(prompt="...", model="x/flux2-klein:9b")
+```
+
+**Modèles supportés** :
+
+| Modèle Ollama | Taille | Vitesse (M-series) |
+|---|---|---|
+| `x/flux2-klein:9b` | ~11 GB | ~30-60s / image 1024² |
+| `x/flux2-klein:4b` | plus petit | plus rapide |
+| `x/z-image-turbo` | léger | drafts ultra-rapides |
+
+**Limites actuelles** :
+- L'option `size` est ignorée par Ollama 0.24 (sortie 1024×1024 par défaut).
+  Pour redimensionner après coup : utiliser `upscale` ou un post-process PIL.
+- Nécessite ~12-16 GB RAM unifiée pour Klein 9B.
+
 ## 🎨 Workflows PPT typiques
 
 ### Cover deck cohérent en 1 commande
@@ -169,7 +202,8 @@ tile = seamless_tile(texture["image_id"])
 
 | Var | Défaut | Effet |
 |-----|--------|-------|
-| `REPLICATE_API_TOKEN` | (requis) | Token Replicate |
+| `REPLICATE_API_TOKEN` | (requis pour cloud) | Token Replicate |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | URL daemon Ollama (local) |
 | `IMAGE_GEN_CACHE` | `~/.cache/image-gen` | Dossier cache |
 | `AUTO_ENHANCE_PROMPT` | `true` | Enrichit auto les prompts courts |
 

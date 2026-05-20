@@ -46,7 +46,7 @@ PICKER_DIR = Path(__file__).resolve().parent
 #   1. CLI --presentations
 #   2. env CLAUDIA_PPT_PRESENTATIONS
 #   3. <picker>/../../presentations  (sibling of the Claudia-ppt repo)
-#   4. /Users/courcirc8/Documents/Cursor/MCPs/presentations  (hard default)
+#   4. /Users/courcirc8/Dev/Cursor/MCPs/presentations  (hard default)
 def _default_presentations_dir() -> Path:
     env = os.environ.get("CLAUDIA_PPT_PRESENTATIONS")
     if env:
@@ -54,7 +54,7 @@ def _default_presentations_dir() -> Path:
     sibling = (PICKER_DIR.parent.parent / "presentations").resolve()
     if sibling.is_dir():
         return sibling
-    return Path("/Users/courcirc8/Documents/Cursor/MCPs/presentations").resolve()
+    return Path("/Users/courcirc8/Dev/Cursor/MCPs/presentations").resolve()
 
 
 PRESENTATIONS_DIR = _default_presentations_dir()
